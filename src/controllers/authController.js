@@ -1,50 +1,39 @@
 const { z } = require('zod');
 const { registerUser, loginUser } = require('../services/userService');
 
+const registerSchema = z.object({
+    full_name: z.string(),
+    email: z.string().email(),
+    password: z.string().min(6),
+    password_confirmation: z.string().min(6),
+    phone_number: z.string().optional(),
+    profile_picture_url: z.string().url().optional(),
+    bio: z.string().optional(),
+    role: z.enum(['STUDENT', 'TEACHER']),
+});
+
+const loginSchema = z.object({
+    email: z.string().email(),
+    password: z.string().min(6),
+});
+
 const register = async (req, res) => {
-    const registerSchema = z.object({
-        full_name: z.string(),
-        email: z.string(),
-        password: z.string(),
-        password_confirmation: z.string(),
-        phone_number: z.string().optional(),
-        profile_picture_url: z.string().optional(),
-        bio: z.string().optional(),
-    });
-
     try {
-        const validation = registerSchema.safeParse(req.body);
-        if (!validation.success) {
-            return res.status(400).json({ message: "Invalid input", errors: validation.error.errors });
-        }
-
-        if (validation.data.password !== validation.data.password_confirmation) {
-            return res.status(400).json({ message: "Password doesn't match the confirmation!" });
-        }
-
-        const result = await registerUser(validation.data);
-        return res.status(201).json(result);
+        const userData = registerSchema.parse(req.body);
+        const result = await registerUser(userData);
+        res.status(201).json(result);
     } catch (error) {
-        return res.status(400).json({ error: error.message });
+        res.status(400).json({ error: error.message });
     }
 };
 
 const login = async (req, res) => {
-    const loginSchema = z.object({
-        email: z.string(),
-        password: z.string(),
-    });
-
     try {
-        const validation = loginSchema.safeParse(req.body);
-        if (!validation.success) {
-            return res.status(400).json({ message: "Invalid input!", errors: validation.error.errors });
-        }
-
-        const result = await loginUser(validation.data.email, validation.data.password);
-        return res.status(200).json(result);
+        const loginData = loginSchema.parse(req.body);
+        const result = await loginUser(loginData.email, loginData.password);
+        res.status(200).json(result);
     } catch (error) {
-        return res.status(400).json({ error: error.message });
+        res.status(400).json({ error: error.message });
     }
 };
 

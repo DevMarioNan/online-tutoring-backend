@@ -18,7 +18,7 @@ model User{
   full_name String
   email String @unique
   password_hash String
-  role Role @default(student)
+  role Role @default(STUDENT)
   phone_number String?
   profile_picture_url String?
   bio String?
@@ -40,10 +40,13 @@ model Otp{
   updated_at DateTime @updatedAt
 }
 
+
+
+
 enum Role{
-  student
-  teacher
-  admin
+  STUDENT
+  TEACHER
+  ADMIN
 }
 
 enum otpType{
